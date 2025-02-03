@@ -1,0 +1,101 @@
+-- creating database name ecommerce
+CREATE DATABASE ecommerce;
+
+-- selecting that databse 
+USE ecommerce;
+
+-- creating customers table 
+CREATE TABLE customers(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(30) NOT NULL,
+    email VARCHAR(50) NOT NULL UNIQUE,
+    address TEXT NOT NULL
+);
+
+-- creating orders table 
+CREATE TABLE orders(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    total_amount DECIMAL(7,2),
+    FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+-- creating products table 
+CREATE TABLE products(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(30) NOT NULL,
+    price DECIMAL(7,2) NOT NULL,
+    description TEXT NOT NULL
+);
+
+-- Insert sample data for customers 
+INSERT INTO customers (name, email, address) VALUES 
+('John Doe', 'john.doe@example.com', '123 Main St, Cityville'),
+('Jane Smith', 'jane.smith@example.com', '456 Oak St, Townsville'),
+('Alice Johnson', 'alice.johnson@example.com', '789 Pine St, Villagetown');
+
+-- Insert sample data for orders 
+INSERT INTO orders (customer_id, order_date, total_amount) VALUES 
+(1, '2024-02-01', 150.75),
+(2, '2024-02-02', 200.00),
+(3, '2024-02-03', 99.99);
+
+-- Insert sample data for orders 
+INSERT INTO products (name, price, description) VALUES 
+('Laptop', 799.99, 'High-performance laptop with 16GB RAM and 512GB SSD'),
+('Smartphone', 899.99, 'Latest smartphone with OLED display and 128GB storage'),
+('Computer', 999.99, 'High-performance computer with 32GB RAM and 512GB SSD');
+
+-- Queries 
+
+-- Retrieve all customers who have placed an order in the last 30 days.
+SELECT DISTINCT cust.* FROM customers AS cust JOIN orders AS ord ON cust.id = ord.customer_id
+WHERE ord.order_date >= CURDATE() - INTERVAL 30 DAY;
+
+-- Get the total amount of all orders placed by each customer.
+SELECT cust.id, cust.name, cust.email, SUM(ord.total_amount) AS total_spent
+FROM customers AS cust
+JOIN orders AS ord ON cust.id = ord.customer_id
+GROUP BY cust.id, cust.name, cust.email
+ORDER BY total_spent DESC;
+
+-- Update the price of Product C to 45.00.
+UPDATE products SET price = 45.00 WHERE name = 'Product C';
+
+-- Add a new column discount to the products table.
+ALTER TABLE discount ADD COLUMN discount DECIMAL(7,2) DEFAULT 0.00;
+
+-- Retrieve the top 3 products with the highest price.
+SELECT * FROM products ORDER BY price DESC LIMIT 3;
+
+-- Get the names of customers who have ordered Product A.
+SELECT DISTINCT cust.name
+FROM customers AS cust
+JOIN orders AS ord ON cust.id = ord.customer_id
+JOIN order_items AS oi ON ord.id = oi.order_id
+JOIN products AS prod ON oi.product_id = prod.id
+WHERE prod.name = 'Product A';
+
+
+-- Join the orders and customers tables to retrieve the customer's name and order date for each order. 
+SELECT cust.name AS customer_name, ord.order_date FROM customers AS cust
+JOIN orders AS ord ON cust.id = ord.customer_id;
+
+
+-- Retrieve the orders with a total amount greater than 150.00.
+SELECT * FROM orders WHERE total_amount > 150.00;
+
+-- Normalize the database by creating a separate table for order items and updating the orders table to reference the order_items table.
+CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(7,2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- Retrieve the average total of all orders.
+SELECT AVG(total_amount) AS average_order_total FROM orders;
