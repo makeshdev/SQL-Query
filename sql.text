@@ -50,10 +50,13 @@ INSERT INTO products (name, price, description) VALUES
 -- Queries 
 
 -- Retrieve all customers who have placed an order in the last 30 days.
+-- get all column from customer table and assin customers to cust ad join the order table with customer table using customer id
 SELECT DISTINCT cust.* FROM customers AS cust JOIN orders AS ord ON cust.id = ord.customer_id
+-- filtering the result of using date function
 WHERE ord.order_date >= CURDATE() - INTERVAL 30 DAY;
 
--- Get the total amount of all orders placed by each customer.
+-- Get the total amount of all orders placed by each customer
+-- Get the customer id,name and email. sum of the total for each customer assin cust(alice) to customer table join the order and customer table also grouped customer id,name,email and short the Desc order list
 SELECT cust.id, cust.name, cust.email, SUM(ord.total_amount) AS total_spent
 FROM customers AS cust
 JOIN orders AS ord ON cust.id = ord.customer_id
@@ -61,15 +64,19 @@ GROUP BY cust.id, cust.name, cust.email
 ORDER BY total_spent DESC;
 
 -- Update the price of Product C to 45.00.
+-- Update the price for product c where the condition satisfy 
 UPDATE products SET price = 45.00 WHERE name = 'Product C';
 
 -- Add a new column discount to the products table.
+-- Using alter add the new column discount
 ALTER TABLE discount ADD COLUMN discount DECIMAL(7,2) DEFAULT 0.00;
 
 -- Retrieve the top 3 products with the highest price.
+-- select 3 product price decending order using limit
 SELECT * FROM products ORDER BY price DESC LIMIT 3;
 
 -- Get the names of customers who have ordered Product A.
+-- Select customer names and count distinct and join the table order and customer. join the product table to get detail and filter the order only productA
 SELECT DISTINCT cust.name
 FROM customers AS cust
 JOIN orders AS ord ON cust.id = ord.customer_id
@@ -78,15 +85,18 @@ JOIN products AS prod ON oi.product_id = prod.id
 WHERE prod.name = 'Product A';
 
 
--- Join the orders and customers tables to retrieve the customer's name and order date for each order. 
+-- Join the orders and customers tables to retrieve the customer's name and order date for each order.
+-- Select customer name and order date. join orders table to link each customer with their orders   
 SELECT cust.name AS customer_name, ord.order_date FROM customers AS cust
 JOIN orders AS ord ON cust.id = ord.customer_id;
 
 
 -- Retrieve the orders with a total amount greater than 150.00.
+-- Using select the total amount grater than 150
 SELECT * FROM orders WHERE total_amount > 150.00;
 
 -- Normalize the database by creating a separate table for order items and updating the orders table to reference the order_items table.
+-- creating the order_items table using order_id, product_id,quantity and foreigin key
 CREATE TABLE order_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
@@ -98,4 +108,5 @@ CREATE TABLE order_items (
 );
 
 -- Retrieve the average total of all orders.
+-- Calculate the average total amount of all orders  
 SELECT AVG(total_amount) AS average_order_total FROM orders;
